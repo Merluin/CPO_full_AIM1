@@ -1,0 +1,38 @@
+#plot-gew-legend-neutral
+GEW legend (B) and responses to neutral facial expressions as a function of the Mask condition (A)
+
+#plot-gew-emotions
+GEW responses as a function of displayed Emotion, Mask and Facial Expression Intensity.
+
+#plot-gew-discrete
+GEW responses as a function of displayed Emotion, Mask and Facial Expression Intensity. Each participants' response was classifed according to the position on the GEW in order to assign a label. The order of the x-axis corresponds to the clockwise order of the GEW. The y-axis represents relative frequencies in each condition.
+
+#plot-angle-mask
+Posterior distributions and 95% HPDIs of the bias Mask effect A) Bias posterior distributions as a function of the Mask condition. B) Posterior distribution of the Mask Δ (Maskyes – Maskno).
+
+#plot-angle-mask-int
+Posterior distributions and 95% HPDIs of the bias Facial Expression Intensity effect A)  Posterior distributions of Mask Δ as a function of the Facial Expression Intensity condition. B) Posterior distribution of the Facial Expression Intensity Δ (Mask Δ full – Mask Δ subtle).
+
+#plot-kappa-mask
+Posterior distributions and 95% HPDIs of the uncertainty Mask effect A) uncertainty posterior distributions as a function of the Mask condition. B) Posterior distribution of the Mask Ratio ((Mask_yes)/(Mask_no)). Values are plotted on the logarithm scale for better visualization (the null value is 0).
+
+#plot-kappa-mask-int
+Posterior distributions and 95% HPDIs of the uncertainty Facial Expression Intensity effect A) uncertainty posterior distributions as a function of the Facial Expression Intensity condition. B) Posterior distribution of the Facial Expression Intensity Ratios ((ΔMask_full)/(ΔMask_subtle )). Values are plotted on the logarithm scale for better visualization (the null value is 0).
+
+#plot-int-mask
+Posterior distributions and 95% HPDIs of the perceived intensity Mask effect A) Perceived intensity posterior distributions as a function of the Mask condition. B) Posterior distribution of the Mask Δ (Maskyes – Maskno).
+
+#plot-int-mask-intensity
+Posterior distributions and 95% HPDI of the perceived intensity Facial Expression Intensity Effect A) Perceived intensity posterior distributions as a function of the Facial Expression Intensity condition. B) Posterior distribution of the Facial Expression Intensity Δ (Δ full – Mask Δ subtle). Intervals are computed as the 95% HPDI.
+
+#tab-kappa-angle-mask-effect
+Posterior distribution summaries for the bias and uncertainty Mask effect as a function of the displayed Emotion. Distributions are summarized using the median and 95% HPDI. Asterisks represents contrasts where the null value (i.e., 0 for deltas or 1 for ratios) is not contained in the 95% HPDI.
+
+#tab-kappa-angle-mask-intensity-effect
+Posterior distribution summaries for the bias and uncertainty Facial Expression Intensity effect as a function of the displayed Emotion. Distributions are summarized using the median and 95% HPDI. Asterisks represents contrasts where the null value (i.e., 0 for deltas or 1 for ratios) is not contained in the 95% HPDI.
+
+#tab-int-mask-effect
+Posterior distribution summaries for the perceived intensity Mask effect as a function of the displayed Emotion. Distributions are summarized using the median and the 95% HPDI. Asterisks represents contrast where the null value (i.e., 0) is not contained in the 95% HPDI.
+
+#tab-int-mask-intensity-effect
+Posterior distribution summaries for the perceived intensity Facial Expression Intensity effect as a function of the displayed Emotion. Distributions are summarized using the median and the 95% HPDI. Asterisks represents contrasts where the null value (i.e., 0) is not contained in the 95% HPDI.

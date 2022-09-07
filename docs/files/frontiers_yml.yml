@@ -1,0 +1,21 @@
+---
+title: "**Supplementary Materials**"
+output:
+  bookdown::pdf_document2:
+    toc: true
+    highlight: pygments
+bibliography: ["../files/references.bib"]
+header-includes:
+  - \usepackage{lscape}
+  - \newcommand{\blandscape}{\begin{landscape}}
+  - \newcommand{\elandscape}{\end{landscape}}
+  - \AddToHook{cmd/section/before}{\clearpage}
+  - \usepackage{titling}
+  - \pretitle{\begin{center}\LARGE\includegraphics[width=5cm, left]{logo1.pdf}\\[\bigskipamount]\par\noindent\rule{\textwidth}{0.8pt}\\}
+  - \posttitle{\end{center}}
+  - \usepackage[export]{adjustbox}
+  - \setcounter{table}{0} 
+  - \renewcommand*{\thetable}{S\arabic{table}}
+  - \setcounter{figure}{0} 
+  - \renewcommand*{\thefigure}{S\arabic{figure}}
+---

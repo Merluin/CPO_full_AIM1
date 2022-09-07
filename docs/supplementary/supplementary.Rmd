@@ -1,0 +1,413 @@
+---
+title: "**Mapping the Perception-space of Facial Expressions (Moebius vs Online Participants)**"
+subtitle: "Supplementary Materials"
+author: 
+  - "Thomas Quettier"
+  - "Paola Sessa"
+output:
+  bookdown::pdf_document2:
+    toc: true
+    toc_depth: 3
+    highlight: pygments
+bibliography: ["../files/references.bib"]
+header-includes:
+  - \AddToHook{cmd/section/before}{\clearpage}
+  - \usepackage{titling}
+  - \setcounter{table}{0} 
+  - \renewcommand*{\thetable}{S\arabic{table}}
+  - \setcounter{figure}{0} 
+  - \renewcommand*{\thefigure}{S\arabic{figure}}
+  - \usepackage{lscape}
+  - \newcommand{\blandscape}{\begin{landscape}}
+  - \newcommand{\elandscape}{\end{landscape}}
+  - \usepackage[nottoc]{tocbibind}
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = "center",
+                      fig.retina = 2,
+                      dev = "pdf")
+```
+
+```{r packages, cache=FALSE}
+devtools::load_all()
+library(here)
+library(magrittr)
+library(tidyr)
+library(dplyr)
+library(kableExtra)
+library(flextable)
+library(ggplot2)
+```
+
+```{r data}
+circular <- readRDS(here("objects", "circular_objects.rds"))
+intensity <- readRDS(here("objects", "intensity_objects.rds"))
+plots <- readRDS(here("objects", "paper_plots.rds"))
+tables <- readRDS(here("objects", "paper_tables.rds"))
+dat <- readRDS(here("data", "full_valid.rds"))
+emo_coords <- readRDS(here("objects", "emo_coords.rds"))
+```
+
+```{r analysis-setup}
+captions <- get_captions(file = here("docs", "files", "supplementary-captions.txt"))
+```
+
+```{r functions}
+tidy_prior <- function(data){
+  data %>% 
+    select(-source, -group, -resp, -nlpar, -lb, -ub)
+}
+
+qtab <- function(data, max_width = 6){
+  data %>% 
+    flextable() %>% 
+    autofit() %>% 
+    theme_vanilla() %>% 
+    fit_to_width(max_width = max_width)
+}
+
+get_chunk_label <- function(){
+  knitr::opts_current$get("label")
+}
+
+theme_paper <- function(font_size = 25){
+  cowplot::theme_minimal_grid(font_size = font_size)
+}
+
+newpage <- function(){
+  cat("\\newpage\n")
+}
+```
+
+# General approach
+
+The Geneva Emotion Wheel [GEW; @Scherer2005-nc] allows having an intuitive and informative way to collect participants' responses in a facial expression perception task. Specifically, in a single measurement is possible to have information about the facial expression *category* (i.e., the response angle around the circle) and *intensity* (i.e., the distance from the center).
+
+## Facial expression category
+
+In order to measure the response angle for each trial we transformed Cartesian coordinates ($(x_i, y_i)$) into polar coordinates ($(r_i, \theta_i)$) as in Equation \@ref(eq:coord-polar).
+
+\begin{equation}
+\theta_{ij} = tan^{-1}(\frac{y_{ij}}{x_{ij}})
+(\#eq:coord-polar)
+\end{equation}
+
+In this way we have the *pressed angle* for each trial. Given that each emotion has an absolute location on the GEW, we calculated a *position-free* index of performance computing the difference between the *pressed angle* and the *ideal angle* (i.e., the GEW location of the presented emotion).
+
+Then we calculated the *ideal* angle for each presented emotion, in the middle of each wheel circle. To obtain a measure comparable between emotion, we calculated the angular difference between the *ideal* and the pressed angle using the Equation \@ref(eq:ang-diff)
+
+\begin{equation}
+Bias = ((ideal - pressed) + 180) \mod 360 - 180
+(\#eq:ang-diff)
+\end{equation}
+
+This new measure (*bias*) has several advantages. Despite each emotion have a different location within the wheel, each response is now expressed in a position-free metric. The *bias* is centered on 0 if there is no response tendency away from the *ideal* value. Otherwise, a systematic shift would move the circular mean away from 0, clockwise (positive values) or anticlockwise (negative values). Other than the circular mean, also the spread on the circle (i.e., *uncertainty*) is an important performance measure. The *bias* and the *uncertainty* are can be considered independent measures.
+
+Given the periodicity of circular data, we cannot use standard statistical modeling tools [@Cremers2018-gr; @Cremers2018-in]. There are different ways to model circular data [see @Cremers2018-gr for an overview]. We decided to use a generalized linear mixed-effect model using the *von Mises* likelihood function. The *von Mises* distribution is an alternative to the Gaussian distribution for circular data, bounded in the range $[-\pi, \pi]$. The two parameters of the von Mises distribution, $\mu$ and $k$^[In fact, k is a concentration parameter that can be conceptually considered as the inverse of the standard deviation. When the concentration is 0 the distribution is *uniform*] representing our *bias* and *uncertainty* parameters. To facilitate the interpretation of models' parameters, we transformed $k$ into the circular variance using Equation \@ref(eq:bessel).
+
+\begin{equation}
+\sigma^2 = 1 - \frac{I_1(k)}{I_0(k)}
+(\#eq:bessel)
+\end{equation}
+
+The circular variance ranges between 0 (no *uncertainty*) to 1 (maximum *uncertainty*). The transformation is computed using the modified Bessel function $I_i(k)$ of order $i$ [@Evans2011-mf].
+
+## Perceived Intensity
+
+The emotion *intensity* is expressed as the difference from the center of the GEW. Values close or far from the center represent respectively neutral and high facial expression intensity. We calculated the *intensity* for each trial as the *euclidean distance* between the *center* and the *pressed location*. Given that the GEW has been centered (i.e., the center has coordinates $x = 0,y = 0$), the distance from the center is calculated as Equation \@ref(eq:euclidean).
+
+\begin{equation}
+I_{ij} = \sqrt{x^2 + y^2} 
+(\#eq:euclidean)
+\end{equation}
+
+## Statistical models
+
+For the response angle (i.e., *bias* and *uncertainty*) we decided to use a *scale-location* mixed-effect model [@Burkner2018-vz; @Rigby2005-jq]. Under this framework, all parameters of a distribution can be predicted. In particular, we are predicting the *circular mean* (i.e., *bias*) and the *concentration* (i.e., *uncertainty*) Von Mises parameters as a function of Intensity (full and subtle) and Emotion (anger, happiness, disgust, fear, surprise and sadness). For the perceived intensity, we used a regular general linear mixed-effect model.
+
+We estimated both models under a Bayesian framework the R software [@r-lang] using the Brms package [@Burkner2017-di] based on the STAN probabilistic programming language [@Carpenter2017-kf]. The Bayesian statistics consist in combining information from prior knowledge (i.e. *priors*) and the data (i.e., *likelihood*) to obtain the *posterior* distribution [@Kruschke2018-sm].
+
+In terms of contrast coding, for categorical predictors, we used `sum contrasts` using the `contr.sum()` function. 
+
+### `brms`
+
+We fitted our models using the `brms` package. According to different models the `brm` setup could be different in terms of `backend`, number of `iterations` and `chains` and the parallelization approach. The general approach for `bias/uncertainty` models is the following:
+
+```{r circular-brms, eval = FALSE, echo = TRUE}
+
+# the scale-location specification
+form <- bf(theta_cen ~ ... + (1|id), 
+           kappa ~ ... + (1|id))
+
+brm(formula, # model formula
+    data = data,
+    prior = priors,
+    family = von_mises(link = "tan_half", link_kappa = "log"),
+    chains = 15,
+    cores = 15,
+    iter = 4000,
+    sample_prior = "yes",
+    save_pars = save_pars(all = TRUE),
+    seed = 2022)
+```
+
+For the `perceived intensity`
+
+```{r perceived-intensity-brms, eval = FALSE, echo = TRUE}
+
+brm(int ~ ... + (1|id),
+    data = data,
+    prior = priors,
+    family = gaussian(),
+    chains = 15,
+    cores = 15,
+    iter = 4000,
+    save_pars = save_pars(all = TRUE),
+    sample_prior = "yes",
+    seed = 2022)
+```
+
+When fitting models with uninformative or flat priors, we used a different chains/iteration approach to improve model fitting (especially for the Von Mises model). In particular we used the *within-chains* parallelization (https://cran.r-project.org/web/packages/brms/vignettes/brms_threading.html) for `bias/uncertainty` models:
+
+```{r circular-brms-un, eval = FALSE, echo = TRUE}
+
+# the scale-location specification
+form <- bf(theta_cen ~ ... + (1|id), 
+           kappa ~ ... + (1|id))
+
+brm(form,
+    data = data,
+    family = von_mises(link = "tan_half", link_kappa = "log"),
+    chains = 4,
+    prior = priors, # uninformative or flat
+    cores = 4,
+    iter = 10000,
+    sample_prior = "yes",
+    threads = threading(6),  # within-chains parallellization
+    save_pars = save_pars(all = TRUE),
+    seed = seed)
+```
+
+For the `perceived intensity` models we use the same approach as the main models given the simpler fitting process.
+
+## Raw data
+
+The figure \@ref(fig:gew-emotions) represents all participants' responses for each experimental condition, directly plotted on the GEW. The figure \@ref(fig:gew-legend-neutral) represents the GEW legend and the responses to the neutral condition.
+
+```{r gew-legend-neutral, fig.cap=captions[get_chunk_label()], fig.width=12, out.width="100%"}
+
+bg <- magick::image_read(here("files", "gew_low_res.png"))
+bg <- magick::image_modulate(bg, brightness = 80)
+
+gew_legend <- emo_coords %>%   
+  mutate(mask = "Legend",
+         flip = ifelse(x_emo < 0, angle_emo + 180, angle_emo),
+         emotion = stringr::str_to_title(emotion)) %>% 
+  ggplot() +
+  ggpubr::background_image(bg) +
+  geom_text(aes(x = x_emo*0.75, y = y_emo*0.75, 
+                label = emotion, 
+                angle = flip),
+            size = 5, fontface = "bold",
+            check_overlap = TRUE) +
+  facet_grid(. ~ mask) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks = element_blank(),
+        strip.text.x = element_text(size = 20, face = "bold"),
+        strip.text.y = element_text(size = 20, face = "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white", color = NA)) +
+  coord_fixed(xlim = c(-300, 300), ylim = c(-300, 300))
+
+dat_plot <- dat %>% 
+  select(Exp.group,Wheel.task,emotion,Wheel.name, Video.intensity, x_cen, y_cen) %>% 
+  mutate( intensity = stringr::str_to_title(Video.intensity),
+          emotion = stringr::str_to_title(emotion),
+          emotion = ifelse(emotion == "Neutrality", "Neutral", emotion),
+          emotion = factor(emotion),
+          emotion = forcats::fct_relevel(emotion, "Neutral"))
+
+neutral_plot <- dat_plot %>% 
+  filter(emotion == "Neutral") %>% 
+  ggplot(aes(x = x_cen, y = y_cen, color= Exp.group)) +
+  ggpubr::background_image(bg) +
+  geom_point(alpha = 0.5, show.legend = FALSE, size = 3) +
+  ggh4x::facet_nested(Wheel.name ~ emotion, switch="y") +
+  coord_fixed(xlim = c(-300, 300), ylim = c(-300, 300)) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        strip.text.x = element_text(size = 20, face = "bold"),
+        strip.text.y = element_text(size = 20, face = "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white", color = NA))+
+  facet_grid( Wheel.name~ Video.intensity)
+
+cowplot::plot_grid(neutral_plot, gew_legend, labels = "AUTO")
+```
+
+\newpage
+\blandscape
+
+```{r gew-emotions, fig.cap=captions[get_chunk_label()], fig.width=13, fig.height=13, out.width="100%"}
+plots$plot_gew_emotions
+```
+
+\elandscape
+
+# Fitted Models{#fitted-models}
+
+Table \@ref(tab:tab-info-models) depicts all fitted models with main parameters. To read the table:
+
+- `fit_ri_int`: the random-intercept two-way interaction model for *bias*/*uncertainty* and *perceived intensity*
+- `fit_ri_no3int`: the random-intercept model without the three-way interaction *bias*/*uncertainty* and *perceived intensity*
+- `fit_*un/flat`: models with completely uninformative or flat priors
+
+\blandscape
+
+```{r tab-info-models}
+circ_info <- lapply(circular$fit_info, create_info_tab) %>% 
+  bind_rows(.id = "name") %>% 
+  select(model, name, starts_with("fitting"))
+
+int_info <- lapply(intensity$fit_info, create_info_tab) %>% 
+  bind_rows(.id = "name") %>% 
+  select(model, name, starts_with("fitting"))
+
+mod_info <- bind_rows(circ_info, int_info)
+
+names(mod_info) <- stringr::str_replace_all(names(mod_info), "fitting.", "")
+
+mod_info %>% 
+  mutate(model = stringr::str_replace_all(model, "diff_theta", "diff_theta"),
+         model = stringr::str_replace_all(model, "kappa", "kappa"),
+         model = stringr::str_replace_all(model, "int", "int")) %>% 
+  qtab(max_width = 25) %>% 
+  fontsize(size = 10) %>% 
+  width(j = 1, 4) %>% 
+  align(j = 2:6, align = "center", part = "all") %>% 
+  set_caption(caption = captions[get_chunk_label()])
+```
+
+\elandscape
+
+In the next section we presented all fitted models using the same approach:
+
+- the model name (the same name as the R object)
+- prior distributions for each parameter
+- model output
+
+For the prior tables:
+
+- `prior`: is the prior distribution with parameters. All parameters without a proper prior (i.e., different from a flat prior) are not reported in the table.
+- `class`: is the type of parameter (`b` is for $\beta$ and `sd` for a standard deviation parameter e.g., by-subject intercept or residual $\sigma$)
+- `coef`: is the specific model parameters. If a prior is defined only for a *class*, then all parameters of that class will have the same prior
+- `dpar`: is for *distributional parameters*. In the case of the von Mises model refers to $k$ coefficients
+
+For the model tables:
+
+- `param`: is the model parameter name
+- `estimate`: is the mean of the posterior distribution
+- `Est.Error`: is the standard error of the posterior distribution
+- `95% CI`: is the 95% credible interval
+- `Rhat`: is the Gelman and Rubin [@Gelman1992-nb] convergence index. When is below 1.1 the parameters has converged.
+- `Bulk/Tail Effective Sample Size`: can be considered as the amount of information used for estimating a parameter. In general higher is better (see https://mc-stan.org/docs/2_18/reference-manual/effective-sample-size-section.html). Is calculated from the number of iterations and chains of the models.
+
+\newpage
+
+## Bias/Uncertainty
+
+```{r circular-tables, results='asis'}
+for(i in 1:length(circular$tidy_fit)){
+  
+  if(!grepl("flat|un", names(circular$tidy_fit)[i])){
+    
+    # Title
+    cat(paste("###", names(circular$tidy_fit)[i]), "\n")
+    
+    # Model
+    mod_info[mod_info$name == names(circular$tidy_fit)[i], ] %>% 
+      qtab() %>% 
+      width(j = 1, 2)
+    
+    # Priors
+    cat(paste("####", "Priors", "\n"))
+    circular$priors[[i]] %>% 
+      tidy_prior() %>% 
+      qtab() %>% 
+      set_caption(caption = "") %>% 
+      flextable_to_rmd()
+    
+    # Models
+    cat(paste("####", "Model", "\n"))
+    circular$tidy_fit[[i]] %>% 
+      qtab() %>% 
+      colformat_double(digits = 5) %>% 
+      set_caption("") %>% 
+      flextable_to_rmd()
+    newpage()
+  }
+}
+```
+
+\newpage
+
+## Perceived intensity
+
+```{r intensity-tables, results='asis'}
+for(i in 1:length(intensity$tidy_fit)){
+  
+  if(!grepl("flat|un", names(intensity$tidy_fit)[i])){
+    
+    # Title
+    cat(paste("###", names(intensity$tidy_fit)[i]), "\n")
+  
+    # Priors
+    cat(paste("####", "Priors", "\n"))
+    intensity$priors[[i]] %>% 
+      tidy_prior() %>% 
+      qtab() %>% 
+      set_caption("") %>% 
+      flextable_to_rmd()
+  
+    # Models
+    cat(paste("####", "Model", "\n"))
+    intensity$tidy_fit[[i]] %>% 
+      qtab() %>% 
+      colformat_double(digits = 5) %>% 
+      set_caption("") %>% 
+      flextable_to_rmd()
+    newpage()
+  }
+}
+```
+
+# Suggestions for meta-analysis
+
+In this section, there are some suggestions for including these results into a meta-analysis. Firstly, if the presented results are not sufficient, the online OSF repository (https://osf.io/e2kcw/) contains raw data to compute all relevant measures. In general, for Bayesian models, each parameter or posterior contrast has a full posterior probability. This makes the computation of new measures (e.g., standardized effect sizes) and standard errors relatively easy. The only difference from standard calculations is that each new measure will have a full posterior distribution. These new distributions can be summarized (e.g., using the median) and used for the meta-analytic model.
+
+## Bias
+
+To our knowledge, for the *bias*, there is no straightforward standardized effect size measure to compute, especially for a meta-analytic model. A possibility is using a general index of overlap between two posterior distributions (e.g., for a specific post-hoc contrast) as proposed by Pastore and Calcagnì [-@Pastore2019-tq]. However, the meta-analytic comparison with standard effect sizes index is not straightforward.
+
+## Uncertainty
+
+For the *uncertainty* it is possible to use directly the values from the posterior contrasts. The *uncertainty* (i.e., *circular variance*) is expressed on a scale from 0 to 1 (similar to a probability). All posterior contrasts can be interpreted as probability ratios and odds ratios. Also, the standard error can be calculated as the standard deviation of the posterior distribution. Furthermore, it is also possible to convert from odds ratio (or similar measures) to other effect size indexes (e.g., Cohen's $d$, see https://easystats.github.io/effectsize/reference/d_to_r.html).
+
+## Perceived Intensity
+
+For the perceived intensity it is possible to use a standard Cohen's $d$ measure. The only general caveat about calculating a Cohen's $d$ with multilevel models concerns which standard deviation(s) to use [@Brysbaert2018-wp; @Westfall2014-im]
+
+# References
