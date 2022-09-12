@@ -26,7 +26,7 @@ devtools::load_all()
 seed <- 2022
 chains <- 15
 iter <- 4000
-cores <- chains  
+cores <- 6 
 samp_prior <- "yes"
 
 # Data --------------------------------------------------------------------
@@ -79,7 +79,28 @@ fit_ri_int <- brm(form_ri_int,
 
 success_step(fit_ri_int)
 
-# Model 2 - Emotion * group + intensity ------------------------------------
+# Model 1b - Emotion * group * intensity * sunnybrook------------------------------------
+
+form_ri_4int <- bf(diff_theta ~ emotion * group * intensity * Pt.sb + (1|id))
+
+prior_von_mises <- c(
+  prior(normal(0, 2), class = "b", dpar = ""))
+
+fit_ri_4int <- brm(form_ri_4int,
+                  data = dat_fit,
+                  prior = prior_von_mises,
+                  family = von_mises(link = "tan_half"),
+                  chains = chains,
+                  cores = cores,
+                  iter = iter,
+                  sample_prior = samp_prior,
+                  file = "models/theta/fit_ri_4int",
+                  save_pars = save_pars(all = TRUE),
+                  seed = seed)
+
+success_step(fit_ri_4int)
+
+# Model 2 - Emotion + group + intensity ------------------------------------
 
 form_ri_no3int <- bf(diff_theta ~ emotion + group + intensity + emotion:group + emotion:intensity + group:intensity + (1|id), 
                      kappa ~ emotion + group + intensity + emotion:group + emotion:intensity + group:intensity + (1|id))
