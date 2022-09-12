@@ -14,7 +14,7 @@ dataset_online <- function(datasetname){
 library(tidyverse)
 
 # Parameters --------------------------------------------------------------
-folder_dir<-  file.path("original_data", "online")
+folder_dir<-  file.path("original_data")
 filetask<-list.files(folder_dir,pattern= 'task')
 fileq<-list.files(folder_dir,pattern= 'questionnaire')
 
@@ -28,8 +28,8 @@ info<-info%>%
   'colnames<-'(c("Participant.Public.ID" ,"Participant.Private.ID","gender","mail", "study","ID"))%>%
 mutate(ID = c("VICENZA" ,"FIRENZE",  "MATERA",  "VERONA",  "NAPOLI", "BARI","BOLOGNA", "ROMA","MILANO", "ANCONA", "TREVISO","TORINO", "PESCARA"),
        age = c(NA,50,37,59,62,61,41,NA,29,45,52,38,48),
-       #MADRS = c(18,8,14,9,5,25,0,0,11,8,4,9,13),
-       )
+       MADRS = c(18,8,14,9,5,25,0,0,11,8,4,9,13),
+       SB = c(39,50,44,56,41,87,65,56,44,32,90,80,43))
 
 # Task Dataset ------------------------------------------------------------
 
@@ -42,10 +42,10 @@ select( "Local.Date", "Participant.Public.ID" ,"Trial.Number",
 
 # Final Dataset -----------------------------------------------------------
 data<-left_join(info,dataset, by = "Participant.Public.ID")%>%
-  select("Local.Date","Trial.Number","Participant.Public.ID","ID" ,"gender","study","age",
+  select("Local.Date","Trial.Number","Participant.Public.ID","ID" ,"gender","study","age", "SB",
      "Screen.Name", "Reaction.Time", "X.Coordinate", "Y.Coordinate", "display", 
     "Videos", "intensity", "file_gender", "emotion", "identity")%>%
-  'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study", "Pt.age",
+  'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study", "Pt.age","Pt.sb",
                 "Wheel.name", "Wheel.rt", "Wheel.x", "Wheel.y", "Wheel.task", 
                "Video.name", "Video.intensity", "Video.gender", "Video.emotion", "Video.id"))%>%
   mutate(Wheel.y = Wheel.y - 300,

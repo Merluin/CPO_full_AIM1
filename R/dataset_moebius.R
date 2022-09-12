@@ -14,7 +14,7 @@ dataset_moebius <- function(dataset_name)
   devtools::load_all()
   
   # find nb of file
-  folder_dir<-file.path("original_data","moebius")
+  folder_dir<-file.path("original_data")
   
   #concatenate all file
   dataset<-list.files(path=folder_dir, full.names = TRUE,pattern='csv') %>%
@@ -28,13 +28,18 @@ dataset_moebius <- function(dataset_name)
     mutate(trial = 1:n()) %>% 
     ungroup()
   
+  info<-data.frame(subject = c(1:3), SB = c(12,17,9))
+  
+  dataset<-left_join(dataset,info, by = "subject")
+  
+  
 Pct<-dataset%>%
   filter(loop_practice.thisRepN>=0)%>%
-    select("date","trial","id","subject","sex","education", "age","group",
+    select("date","trial","id","subject","sex","education", "age","SB","group",
            "practice","primary.time","primary.x","primary.y",
            "file_duration", "file", "file_emotion_level", "file_gender",
            "file_emotion", "file_id")%>%
-    'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Exp.group",
+    'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Pt.sb","Exp.group",
                    "Wheel.name", "Wheel.rt", "Wheel.x", "Wheel.y", "Wheel.task", 
                    "Video.name", "Video.intensity", "Video.gender", "Video.emotion", "Video.id"))%>%
     mutate(Wheel.name = "GW1" ,
@@ -43,11 +48,11 @@ Pct<-dataset%>%
   
 Gw1<-dataset%>%
   filter(exp_blocks.thisRepN >= 0)%>%
-  select("date","trial","id","subject","sex","education", "age","group",
+  select("date","trial","id","subject","sex","education", "age","SB","group",
          "practice","primary.time","primary.x","primary.y",
          "file_duration", "file", "file_emotion_level", "file_gender",
          "file_emotion", "file_id")%>%
-    'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Exp.group",
+    'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Pt.sb","Exp.group",
                    "Wheel.name", "Wheel.rt", "Wheel.x", "Wheel.y", "Wheel.task", 
                    "Video.name", "Video.intensity", "Video.gender", "Video.emotion", "Video.id"))%>%
     mutate(Wheel.name = "GW1",
@@ -56,11 +61,11 @@ Gw1<-dataset%>%
 
 Gw2<-dataset%>%
   filter(exp_blocks.thisRepN >= 0)%>%
-  select("date","trial","id","subject","sex","education", "age","group",
+  select("date","trial","id","subject","sex","education", "age","SB","group",
          "practice","secondary.time","secondary.x","secondary.y",
          "file_duration", "file", "file_emotion_level", "file_gender",
          "file_emotion", "file_id")%>%
-  'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Exp.group",
+  'colnames<-'(c("Exp.date","Exp.trial","Pt.Public.ID","Pt.code" ,"Pt.gender","Pt.study","Pt.age","Pt.sb","Exp.group",
                  "Wheel.name", "Wheel.rt", "Wheel.x", "Wheel.y", "Wheel.task", 
                  "Video.name", "Video.intensity", "Video.gender", "Video.emotion", "Video.id"))%>%
   mutate(Wheel.name = "GW2",
