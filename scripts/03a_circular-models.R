@@ -79,7 +79,7 @@ fit_ri_int <- brm(form_ri_int,
 
 success_step(fit_ri_int)
 
-# Model 1 - Emotion * group * intensity ------------------------------------
+# Model 1a - Emotion * group * intensity ------------------------------------
 
 form_ri_3int <- bf(diff_theta ~ emotion * group * intensity + (1|id))
 
