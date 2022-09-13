@@ -94,7 +94,7 @@ fit_ri_3int <- brm(form_ri_3int,
                    cores = cores,
                    iter = iter,
                    sample_prior = samp_prior,
-                   file = "models/theta/fit_ri_4int",
+                   file = "models/theta/fit_ri_3int",
                    save_pars = save_pars(all = TRUE),
                    seed = seed)
 
