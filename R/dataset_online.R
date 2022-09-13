@@ -14,7 +14,7 @@ dataset_online <- function(datasetname){
 library(tidyverse)
 
 # Parameters --------------------------------------------------------------
-folder_dir<-  file.path("original_data")
+folder_dir<-  file.path("original_data","online")
 filetask<-list.files(folder_dir,pattern= 'task')
 fileq<-list.files(folder_dir,pattern= 'questionnaire')
 
