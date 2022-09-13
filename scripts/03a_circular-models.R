@@ -79,6 +79,37 @@ fit_ri_int <- brm(form_ri_int,
 
 success_step(fit_ri_int)
 
+# Model 1 - Emotion * group * intensity ------------------------------------
+
+form_ri_3int <- bf(diff_theta ~ emotion * group * intensity + (1|id))
+
+prior_von_mises <- c( prior(normal(0, 2), class = "b", dpar = ""))
+
+
+fit_ri_3int <- brm(form_ri_3int,
+                   data = dat_fit,
+                   prior = prior_von_mises,
+                   family = von_mises(link = "tan_half"),
+                   chains = chains,
+                   cores = cores,
+                   iter = iter,
+                   sample_prior = samp_prior,
+                   file = "models/theta/fit_ri_4int",
+                   save_pars = save_pars(all = TRUE),
+                   seed = seed)
+
+success_step(fit_ri_3int)
+
+
+summary(fit_ri_3int)
+m1<-emmeans(fit_ri_3int, ~group|intensity|emotion)
+s1<-summary(m1)
+s1%>%
+  as.data.frame()%>%
+  flextable()%>% 
+  colformat_double(digits = 2) %>% 
+  theme_vanilla()
+
 # Model 1b - Emotion * group * intensity * sunnybrook------------------------------------
 
 form_ri_4int <- bf(diff_theta ~ emotion * group * intensity * Pt.sb + (1|id))
@@ -99,6 +130,16 @@ fit_ri_4int <- brm(form_ri_4int,
                   seed = seed)
 
 success_step(fit_ri_4int)
+
+
+summary(fit_ri_4int)
+m1<-emtrends(fit_ri_4int, ~group|intensity|emotion ,var = "Pt.sb")
+s1<-summary(m1)
+s1%>%
+  as.data.frame()%>%
+  flextable()%>% 
+  colformat_double(digits = 2) %>% 
+  theme_vanilla()
 
 # Model 2 - Emotion + group + intensity ------------------------------------
 
