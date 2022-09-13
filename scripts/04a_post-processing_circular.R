@@ -53,8 +53,7 @@ data_grid_fit_ri_int <- expand_grid(
 # tan-half for mu and exp for kappa
 
 post_fit_ri_int <- epred_draws(fit_list$fit_ri_int, newdata = data_grid_fit_ri_int,
-                               re_formula = NA,
-                               dpar = "kappa")
+                               re_formula = NA)
 
 # getting posterior in degrees. Given that is a linear transformation, results are
 # conceptually the same
@@ -63,8 +62,7 @@ post_fit_ri_int$angle <- rad_to_deg(post_fit_ri_int$.epred)
 
 
 post_fit_ri_int <- post_fit_ri_int %>% 
-  rename("theta" = .epred) %>% 
-  mutate(kappa_inv = kappa_to_var(kappa)) # inverse of concentration
+  rename("theta" = .epred) 
 
 # computing relevant posterior transformations, group_ratio and group_diff
 # the ratio is moebius - online
@@ -72,39 +70,23 @@ post_fit_ri_int <- post_fit_ri_int %>%
 
 post_fit_ri_diff_group <- post_fit_ri_int %>%
   ungroup() %>%
-  select(group, emotion, intensity, angle, kappa, kappa_inv, .draw) %>%
-  pivot_wider(names_from = group, values_from = c(kappa, angle, kappa_inv)) %>%
-  mutate(kappa_inv_ratio = kappa_inv_moebius/kappa_inv_online,
-         kappa_log_ratio_inv = log(kappa_inv_ratio),
-         kappa_ratio = kappa_moebius/kappa_online,
-         kappa_log_ratio = log(kappa_ratio),
-         angle_diff = angle_moebius - angle_online)
+  select(group, emotion, intensity, angle,  .draw) %>%
+  pivot_wider(names_from = group, values_from = c(angle))%>%
+  mutate(angle_diff = moebius - online)
 
 post_fit_ri_diff_int <- post_fit_ri_int %>%
   ungroup() %>%
-  select(group, emotion, intensity, angle, kappa, kappa_inv, .draw) %>%
-  pivot_wider(names_from = intensity, values_from = c(kappa, angle, kappa_inv)) %>%
-  mutate(kappa_inv_ratio = kappa_inv_full/kappa_inv_subtle,
-         kappa_log_ratio_inv = log(kappa_inv_ratio),
-         kappa_ratio = kappa_full/kappa_subtle,
-         kappa_log_ratio = log(kappa_ratio),
-         angle_diff = angle_full - angle_subtle)
+  select(group, emotion, intensity, angle, .draw) %>%
+  pivot_wider(names_from = intensity, values_from = c( angle)) %>%
+  mutate(angle_diff = full - subtle)
 
 # Adding Information Criteria ---------------------------------------------
 
 fit_list$fit_ri_int <- add_criterion(fit_list$fit_ri_int, "loo", ndraws = 5000, force_save = TRUE)
-fit_list$fit_ri_no3int <- add_criterion(fit_list$fit_ri_no3int, "loo", ndraws = 5000, force_save = TRUE)
 
-int_effect_weights <- model_weights(fit_list$fit_ri_int, fit_list$fit_ri_no3int, ndraws = 5000)
 
-int_effect_loo_diff <- loo_compare(fit_list$fit_ri_int, fit_list$fit_ri_no3int)
 
-loo_list <- list(
-  fit_ri_int = fit_list$fit_ri_int$criteria$loo,
-  fit_ri_no3int = fit_list$fit_ri_no3int$criteria$loo,
-  weights = int_effect_weights,
-  diff = int_effect_loo_diff
-)
+loo_list <- list(fit_ri_int = fit_list$fit_ri_int$criteria$loo)
 
 # Bayes Factor ------------------------------------------------------------
 # 

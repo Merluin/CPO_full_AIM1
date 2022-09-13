@@ -67,18 +67,9 @@ post_fit_ri_diff_group <- post_fit_ri_int %>%
 # Adding Information Criteria ---------------------------------------------
 
 fit_list$fit_ri_int <- add_criterion(fit_list$fit_ri_int, "loo")
-fit_list$fit_ri_no3int <- add_criterion(fit_list$fit_ri_no3int, "loo")
 
-int_effect_weights <- model_weights(fit_list$fit_ri_int, fit_list$fit_ri_no3int)
 
-int_effect_loo_diff <- loo_compare(fit_list$fit_ri_int, fit_list$fit_ri_no3int)
-
-loo_list <- list(
-  fit_ri_int = fit_list$fit_ri_int$criteria$loo,
-  fit_ri_no3int = fit_list$fit_ri_no3int$criteria$loo,
-  weights = int_effect_weights,
-  diff = int_effect_loo_diff
-)
+loo_list <- list(fit_ri_int = fit_list$fit_ri_int$criteria$loo)
 
 # Bayes Factor ------------------------------------------------------------
 
