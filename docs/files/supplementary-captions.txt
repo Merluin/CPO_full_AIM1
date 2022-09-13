@@ -1,8 +1,17 @@
 #gew-legend-neutral
-GEW legend (B) and responses to neutral facial expressions as a function of the Intensity and Mapping Wheel 1 and 2 (A)
+GEW legend (B) and responses to neutral facial expressions as a function of the Intensity (A)
 
 #gew-emotions
-GEW responses as a function of displayed Emotion, Intensity and Mapping Wheel 1 and 2.
+GEW responses as a function of displayed Emotion, Intensity.
 
 #tab-info-models
 Table with model formulas, names and fitting parameters
+
+#bias-plot
+Posterior distributions and 95\% HPDIs of the bias effect A) Bias posterior distributions as a function of the intensity condition. B) Posterior distributions of the intensity delta contrast (full - subtle)
+
+#intensity-plot
+Posterior distributions and 95\% HPDIs of the perceived intensity effect A) Perceived intensity posterior distributions as a function of the intensity condition. B) Posterior distribution of the intensity delta (full – subtle).
+
+#freq-plot
+GEW responses as a function of displayed Emotion and Facial Expression Intensity. Each participant’s response was classified according to the position on the GEW to assign a label. The order of the x-axis corresponds to the clockwise order of the GEW. The y-axis represents relative frequencies in each condition.

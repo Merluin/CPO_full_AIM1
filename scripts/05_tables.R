@@ -114,7 +114,7 @@ tab_eda <- dat %>%
   set_header_labels(values = list(
     emotion = "Emotion",
     angle_emo = "Wheel Angle°",
-    group = "group",
+    group = "Group",
     intensity = "Intensity",
     m_angle = "Mean°",
     var_angle = "Var",
@@ -130,15 +130,13 @@ tab_eda <- dat %>%
 # Theta/Kappa moebius vs online ---------------------------------------------
 
 tab_kappa_angle_group_effect <- circular_objects$tidy_post$post_fit_ri_diff_group %>%
+  mutate(emotion = paste0(emotion,".", intensity))%>%
   group_by(emotion, .draw) %>%
-  summarise(angle_moebius = mean(angle_moebius),
-            angle_online = mean(angle_online),
-            angle_diff = mean(angle_diff),
-            kappa_inv_moebius = mean(kappa_inv_moebius),
-            kappa_inv_online = mean(kappa_inv_online),
-            kappa_inv_ratio = mean(kappa_inv_ratio)) %>%
+  summarise(angle_moebius = mean(moebius),
+            angle_online = mean(online),
+            angle_diff = mean(angle_diff)) %>%
   ungroup() %>%
-  select(emotion, angle_moebius, angle_online, angle_diff, kappa_inv_moebius, kappa_inv_online, kappa_inv_ratio, .draw) %>%
+  select(emotion, angle_moebius, angle_online, angle_diff,  .draw) %>%
   pivot_longer(2:(ncol(.)-1), names_to = "param", values_to = "value") %>%
   group_by(param) %>%
   nest() %>%
@@ -155,7 +153,7 @@ tab_kappa_angle_group_effect <- circular_objects$tidy_post$post_fit_ri_diff_grou
   select(-param) %>%
   pivot_wider(names_from = contr_param, values_from = value_chr) %>%
   clean_emotion_names(emotion) %>%
-  set_emotion_order(emotion, levels = emo_order) %>%
+  #set_emotion_order(emotion, levels = emo_order) %>%
   flextable_with_param() %>%
   align(part = "header", align = "center") %>%
   align(j = 2, part = "body", align = "center") %>%
@@ -166,40 +164,41 @@ tab_kappa_angle_group_effect <- circular_objects$tidy_post$post_fit_ri_diff_grou
 
 # Theta/Kappa Delta group - Full vs Subtle ---------------------------------
 
-tab_kappa_angle_group_intensity_effect <- circular_objects$tidy_post$post_fit_ri_diff_group %>%
-  select(emotion, intensity, angle_diff, kappa_inv_ratio, .draw) %>%
-  pivot_wider(names_from = intensity, values_from = c(angle_diff, kappa_inv_ratio)) %>%
-  mutate(angle_diff_int = angle_diff_full - angle_diff_subtle,
-         kappa_inv_ratio_int = kappa_inv_ratio_full / kappa_inv_ratio_subtle) %>%
-  select(emotion, starts_with("angle"), starts_with("kappa"), .draw) %>%
-  pivot_longer(2:(ncol(.) - 1), names_to = "param", values_to = "value") %>%
-  group_by(param) %>%
-  nest() %>%
-  mutate(null = ifelse(startsWith(param, "kappa"), 1, 0)) %>%
-  mutate(summary = map2(data, null, function(x, y) get_post_summary(x, emotion, sign = TRUE, null = y))) %>%
-  unnest(summary) %>%
-  select(param, emotion, value_chr) %>%
-  mutate(main_param = ifelse(startsWith(param, "kappa"), "Uncertainty", "Bias"),
-         contr_param = case_when(grepl("full", param) ~  "Deltafull", #"$\\Delta\\;group_{full}$",
-                                 grepl("subtle", param) ~ "Deltasubtle", #"$\\Delta\\;group_{subtle}$",
-                                 TRUE ~ "Contrast"),
-         emotion = as.character(emotion)) %>%
-  ungroup() %>%
-  select(-param) %>%
-  pivot_wider(names_from = contr_param, values_from = value_chr)%>%
-  clean_emotion_names(emotion) %>%
-  set_emotion_order(emotion, levels = emo_order) %>%
-  flextable_with_param() %>%
-  align(part = "header", align = "center") %>%
-  align(j = 2, part = "body", align = "center") %>%
-  merge_v(2) %>%
-  set_header_labels(values = list(
-    emotion = "Emotion",
-    main_param = "Parameter"))
+# tab_kappa_angle_group_intensity_effect <- circular_objects$tidy_post$post_fit_ri_diff_group %>%
+#   select(emotion, intensity, angle_diff, kappa_inv_ratio, .draw) %>%
+#   pivot_wider(names_from = intensity, values_from = c(angle_diff, kappa_inv_ratio)) %>%
+#   mutate(angle_diff_int = angle_diff_full - angle_diff_subtle,
+#          kappa_inv_ratio_int = kappa_inv_ratio_full / kappa_inv_ratio_subtle) %>%
+#   select(emotion, starts_with("angle"), starts_with("kappa"), .draw) %>%
+#   pivot_longer(2:(ncol(.) - 1), names_to = "param", values_to = "value") %>%
+#   group_by(param) %>%
+#   nest() %>%
+#   mutate(null = ifelse(startsWith(param, "kappa"), 1, 0)) %>%
+#   mutate(summary = map2(data, null, function(x, y) get_post_summary(x, emotion, sign = TRUE, null = y))) %>%
+#   unnest(summary) %>%
+#   select(param, emotion, value_chr) %>%
+#   mutate(main_param = ifelse(startsWith(param, "kappa"), "Uncertainty", "Bias"),
+#          contr_param = case_when(grepl("full", param) ~  "Deltafull", #"$\\Delta\\;group_{full}$",
+#                                  grepl("subtle", param) ~ "Deltasubtle", #"$\\Delta\\;group_{subtle}$",
+#                                  TRUE ~ "Contrast"),
+#          emotion = as.character(emotion)) %>%
+#   ungroup() %>%
+#   select(-param) %>%
+#   pivot_wider(names_from = contr_param, values_from = value_chr)%>%
+#   clean_emotion_names(emotion) %>%
+#   set_emotion_order(emotion, levels = emo_order) %>%
+#   flextable_with_param() %>%
+#   align(part = "header", align = "center") %>%
+#   align(j = 2, part = "body", align = "center") %>%
+#   merge_v(2) %>%
+#   set_header_labels(values = list(
+#     emotion = "Emotion",
+#     main_param = "Parameter"))
 
 # Int moebius vs online -----------------------------------------------
 
-tab_int_group_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
+tab_intensity_group_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
+  mutate(emotion = paste0(emotion,".", intensity))%>%
   group_by(emotion, .draw) %>%
   summarise(int_diff = mean(int_diff),
             moebius = mean(moebius),
@@ -219,7 +218,7 @@ tab_int_group_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
   ungroup() %>%
   pivot_wider(names_from = param, values_from = value_chr) %>%
   clean_emotion_names(emotion) %>%
-  set_emotion_order(emotion, levels = emo_order, dpar = FALSE) %>%
+  #set_emotion_order(emotion, levels = emo_order, dpar = FALSE) %>%
   flextable_with_param() %>%
   align(part = "header", align = "center") %>%
   align(j = 2, part = "body", align = "center") %>%
@@ -230,7 +229,7 @@ tab_int_group_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
 
 # Int Delta group - Full vs Subtle -----------------------------------
 
-tab_int_group_intensity_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
+tab_kappa_delta_group_effect <- intensity_objects$tidy_post$post_fit_ri_diff_group %>%
   select(emotion, intensity, int_diff, .draw) %>%
   pivot_wider(names_from = intensity, values_from = int_diff) %>%
   mutate(int_diff_intensity = full - subtle) %>%
@@ -242,8 +241,8 @@ tab_int_group_intensity_effect <- intensity_objects$tidy_post$post_fit_ri_diff_g
          summary = map(data, get_post_summary, emotion, TRUE)) %>%
   unnest(summary) %>%
   select(param, emotion, value_chr) %>%
-  mutate(param = case_when(grepl("full", param) ~ "Deltafull",#"$\\Delta\\;group_{full}$",
-                           grepl("subtle", param) ~ "Deltasubtle",#"$\\Delta\\;group_{subtle}$",
+  mutate(param = case_when(grepl("full", param) ~ "Delta~full~",#"$\\Delta\\;group_{full}$",
+                           grepl("subtle", param) ~ "Delta~subtle~",#"$\\Delta\\;group_{subtle}$",
                            TRUE ~ "Contrast"),
          emotion = as.character(emotion)) %>%
   ungroup() %>%
@@ -260,44 +259,44 @@ tab_int_group_intensity_effect <- intensity_objects$tidy_post$post_fit_ri_diff_g
 
 # Angle/Theta Full vs Subtle ----------------------------------------------
 
-tab_kappa_angle_intensity_effect <- circular_objects$tidy_post$post_fit_ri_diff_int %>%
-  group_by(emotion, .draw) %>%
-  summarise(angle_full = mean(angle_full),
-            angle_subtle = mean(angle_subtle),
-            angle_diff = mean(angle_diff),
-            kappa_inv_full = mean(kappa_inv_full),
-            kappa_inv_subtle = mean(kappa_inv_subtle),
-            kappa_inv_ratio = mean(kappa_inv_ratio)) %>%
-  ungroup() %>%
-  select(emotion, angle_full, angle_subtle, angle_diff, kappa_inv_full, kappa_inv_subtle, kappa_inv_ratio, .draw) %>%
-  pivot_longer(2:(ncol(.)-1), names_to = "param", values_to = "value") %>%
-  group_by(param) %>%
-  nest() %>%
-  mutate(null = ifelse(startsWith(param, "kappa"), 1, 0)) %>%
-  mutate(summary = map2(data, null, function(x, y) get_post_summary(x, emotion, sign = TRUE, null = y))) %>%
-  unnest(summary) %>%
-  select(param, emotion, value_chr) %>%
-  mutate(main_param = ifelse(startsWith(param, "kappa"), "Uncertainty", "Bias"),
-         contr_param = case_when(grepl("full", param) ~ "Intensity~full~",
-                                 grepl("subtle", param) ~ "Intensity~subtle~",
-                                 TRUE ~ "Contrast"),
-         emotion = as.character(emotion)) %>%
-  ungroup() %>%
-  select(-param) %>%
-  pivot_wider(names_from = contr_param, values_from = value_chr) %>%
-  clean_emotion_names(emotion) %>%
-  set_emotion_order(emotion, levels = emo_order) %>%
-  flextable_with_param() %>%
-  align(part = "header", align = "center") %>%
-  align(j = 2, part = "body", align = "center") %>%
-  merge_v(2) %>%
-  set_header_labels(values = list(
-    emotion = "Emotion",
-    main_param = "Parameter"))
+# tab_kappa_angle_intensity_effect <- circular_objects$tidy_post$post_fit_ri_diff_int %>%
+#   group_by(emotion, .draw) %>%
+#   summarise(angle_full = mean(angle_full),
+#             angle_subtle = mean(angle_subtle),
+#             angle_diff = mean(angle_diff),
+#             kappa_inv_full = mean(kappa_inv_full),
+#             kappa_inv_subtle = mean(kappa_inv_subtle),
+#             kappa_inv_ratio = mean(kappa_inv_ratio)) %>%
+#   ungroup() %>%
+#   select(emotion, angle_full, angle_subtle, angle_diff, kappa_inv_full, kappa_inv_subtle, kappa_inv_ratio, .draw) %>%
+#   pivot_longer(2:(ncol(.)-1), names_to = "param", values_to = "value") %>%
+#   group_by(param) %>%
+#   nest() %>%
+#   mutate(null = ifelse(startsWith(param, "kappa"), 1, 0)) %>%
+#   mutate(summary = map2(data, null, function(x, y) get_post_summary(x, emotion, sign = TRUE, null = y))) %>%
+#   unnest(summary) %>%
+#   select(param, emotion, value_chr) %>%
+#   mutate(main_param = ifelse(startsWith(param, "kappa"), "Uncertainty", "Bias"),
+#          contr_param = case_when(grepl("full", param) ~ "Intensity~full~",
+#                                  grepl("subtle", param) ~ "Intensity~subtle~",
+#                                  TRUE ~ "Contrast"),
+#          emotion = as.character(emotion)) %>%
+#   ungroup() %>%
+#   select(-param) %>%
+#   pivot_wider(names_from = contr_param, values_from = value_chr) %>%
+#   clean_emotion_names(emotion) %>%
+#   set_emotion_order(emotion, levels = emo_order) %>%
+#   flextable_with_param() %>%
+#   align(part = "header", align = "center") %>%
+#   align(j = 2, part = "body", align = "center") %>%
+#   merge_v(2) %>%
+#   set_header_labels(values = list(
+#     emotion = "Emotion",
+#     main_param = "Parameter"))
 
 # Int full vs subtle ------------------------------------------------------
 
-tab_int_intensity_effect <- intensity_objects$tidy_post$post_fit_ri_int %>%
+tab_intensity_delta_effect <- intensity_objects$tidy_post$post_fit_ri_int %>%
   group_by(emotion, intensity, .draw) %>%
   summarise(int = mean(int)) %>%
   pivot_wider(names_from = intensity, values_from = int) %>%
@@ -350,9 +349,11 @@ tab_acc_gew <- dat %>%
 
 # Saving ------------------------------------------------------------------
 
-tab_list <- make_named_list(tab_eda, tab_kappa_angle_group_effect, tab_kappa_angle_group_intensity_effect,
-                            tab_int_group_effect, tab_int_group_intensity_effect,
-                            tab_kappa_angle_intensity_effect, tab_int_intensity_effect,
+tab_list <- make_named_list(tab_eda, 
+                            tab_kappa_angle_group_effect,
+                            tab_kappa_delta_group_effect,
+                            tab_intensity_group_effect,
+                            tab_intensity_delta_effect, 
                             tab_acc_gew)
 
 tab_files <- paste0(names(tab_list), ".docx")
