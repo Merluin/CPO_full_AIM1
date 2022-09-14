@@ -93,7 +93,8 @@ gew_legend <- emo_coords %>%
   coord_fixed(xlim = c(-300, 300), ylim = c(-300, 300))
 
 dat_plot <- dat %>% 
-  select(Exp.group,Wheel.task,emotion,Wheel.name, Video.intensity, x_cen, y_cen) %>% 
+  filter(Wheel.name == "GW1")%>%
+  select(Pt.code,Exp.group,Wheel.task,emotion, Video.intensity, x_cen, y_cen) %>% 
   mutate( intensity = stringr::str_to_title(Video.intensity),
           emotion = stringr::str_to_title(emotion),
           emotion = ifelse(emotion == "Neutrality", "Neutral", emotion),
@@ -102,10 +103,10 @@ dat_plot <- dat %>%
 
 neutral_plot <- dat_plot %>% 
   filter(emotion == "Neutral") %>% 
-  ggplot(aes(x = x_cen, y = y_cen, color= Exp.group)) +
+  ggplot(aes(x = x_cen, y = y_cen, color = Exp.group)) +
   ggpubr::background_image(bg) +
   geom_point(alpha = 0.5, show.legend = FALSE, size = 3) +
-  ggh4x::facet_nested(Wheel.name ~ emotion, switch="y") +
+  ggh4x::facet_nested(Video.intensity ~ emotion, switch="y") +
   coord_fixed(xlim = c(-300, 300), ylim = c(-300, 300)) +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
@@ -116,18 +117,17 @@ neutral_plot <- dat_plot %>%
         strip.text.y = element_text(size = 20, face = "bold"),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
-        panel.background = element_rect(fill = "white", color = NA))+
-  facet_grid( Wheel.name~ Video.intensity)
+        panel.background = element_rect(fill = "white", color = NA))
 
 
 plot_gew_legend_neutral <- plot_grid(neutral_plot, gew_legend, labels = "AUTO")
 
 plot_gew_emotions <- dat_plot %>% 
   filter(emotion != "Neutral", Wheel.task == "task") %>% 
-  ggplot(aes(x = x_cen, y = y_cen, color= Exp.group)) +
+  ggplot(aes(x = x_cen, y = y_cen, color = Exp.group)) +
   ggpubr::background_image(bg) +
   geom_point(alpha = 0.5, size = 2) +
-  ggh4x::facet_nested(Wheel.name + intensity ~ emotion) +
+  ggh4x::facet_nested( intensity ~ emotion) +
   coord_fixed(xlim = c(-300, 300), ylim = c(-300, 300)) +
   theme_minimal() +
   theme(axis.text.x = element_blank(),
@@ -198,36 +198,36 @@ plot_angle_intensity <- plot_grid(plot_angle_intensity_a, plot_angle_intensity_b
 
 # Plot Kappa subtle vs full ----------------------------------------------
 
-plot_kappa_intensity_a <- circular_objects$tidy_post$post_fit_ri_int %>% 
-  mutate(emotion = as.character(emotion)) %>% 
-  clean_emotion_names(emotion) %>% 
-  group_by(group, emotion, intensity, .draw) %>% 
-  summarise(kappa_inv = mean(kappa_inv)) %>% 
-  ggplot(aes(x = log(kappa_inv), y = emotion)) +
-  stat_halfeye(aes(fill = intensity),
-               alpha = 0.8, size = 3) +
-  theme_minimal(base_size = 15) +
-  theme_paper() +
-  facet_grid( .~ group)+
-  theme(axis.title.y = element_blank(),
-        legend.position = c(0.90, 0.2)) +
-  xlab("Uncertainty")
-
-plot_kappa_intensity_b <- circular_objects$tidy_post$post_fit_ri_diff_int %>% 
-  group_by(group, emotion, .draw) %>% 
-  summarise(kappa_inv_ratio = mean(kappa_inv_ratio)) %>% 
-  ggplot(aes(x = log(kappa_inv_ratio), y = emotion)) +
-  geom_vline(xintercept = 0, linetype = "dashed", size = 0.5) +
-  stat_halfeye(size = 3,
-               position = position_dodge(width = 0.9)) +
-  theme_paper() +
-  facet_grid( .~ group)+
-  theme(axis.title.y = element_blank(),axis.text.y = element_blank()) +
-  xlab(latex2exp::TeX("log $Ratio_{intensity}$")) +
-  scale_x_continuous(n.breaks = 4)
-
-plot_kappa_intensity <- plot_grid(plot_kappa_intensity_a, plot_kappa_intensity_b,
-                             labels = "AUTO", rel_widths = c(3, 2), align = "hv")
+# plot_kappa_intensity_a <- circular_objects$tidy_post$post_fit_ri_int %>% 
+#   mutate(emotion = as.character(emotion)) %>% 
+#   clean_emotion_names(emotion) %>% 
+#   group_by(group, emotion, intensity, .draw) %>% 
+#   summarise(kappa_inv = mean(kappa_inv)) %>% 
+#   ggplot(aes(x = log(kappa_inv), y = emotion)) +
+#   stat_halfeye(aes(fill = intensity),
+#                alpha = 0.8, size = 3) +
+#   theme_minimal(base_size = 15) +
+#   theme_paper() +
+#   facet_grid( .~ group)+
+#   theme(axis.title.y = element_blank(),
+#         legend.position = c(0.90, 0.2)) +
+#   xlab("Uncertainty")
+# 
+# plot_kappa_intensity_b <- circular_objects$tidy_post$post_fit_ri_diff_int %>% 
+#   group_by(group, emotion, .draw) %>% 
+#   summarise(kappa_inv_ratio = mean(kappa_inv_ratio)) %>% 
+#   ggplot(aes(x = log(kappa_inv_ratio), y = emotion)) +
+#   geom_vline(xintercept = 0, linetype = "dashed", size = 0.5) +
+#   stat_halfeye(size = 3,
+#                position = position_dodge(width = 0.9)) +
+#   theme_paper() +
+#   facet_grid( .~ group)+
+#   theme(axis.title.y = element_blank(),axis.text.y = element_blank()) +
+#   xlab(latex2exp::TeX("log $Ratio_{intensity}$")) +
+#   scale_x_continuous(n.breaks = 4)
+# 
+# plot_kappa_intensity <- plot_grid(plot_kappa_intensity_a, plot_kappa_intensity_b,
+#                              labels = "AUTO", rel_widths = c(3, 2), align = "hv")
 
 
 
@@ -273,26 +273,51 @@ plot_int_intensity <- plot_grid(plot_int_intensity_a, plot_int_intensity_b,
 # order as the wheel
 dat$resp_emotion_label <- factor(dat$resp_emotion_label, levels = emo_coords$emo_order)
 
-dat_summ <- dat %>% 
+dat_sum <- dat %>% 
   drop_na(emotion)%>%
   mutate(intensity = Video.intensity)%>%
   filter(emotion != "neutrality") %>% 
-  group_by(emotion,intensity, resp_emotion_label) %>% 
+  group_by(emotion,Exp.group,intensity, resp_emotion_label) %>% 
   summarise(n = n())
 
-plot_gew_discrete <- dat_summ %>% 
+dat_sum_moebius <- dat %>% 
+  filter(Exp.group == "moebius")%>%
+  drop_na(emotion)%>%
+  mutate(intensity = Video.intensity)%>%
+  filter(emotion != "neutrality") %>% 
+  group_by(emotion,Exp.group,intensity, resp_emotion_label) %>% 
+  summarise(n = n())%>%
+  group_by(emotion,intensity) %>% 
+  mutate(tot = sum(n),
+         p = n/tot)
+dat_sum_online <- dat %>% 
+  filter(Exp.group == "online")%>%
+  drop_na(emotion)%>%
+  mutate(intensity = Video.intensity)%>%
+  filter(emotion != "neutrality") %>% 
+  group_by(emotion,Exp.group,intensity, resp_emotion_label) %>% 
+  summarise(n = n())%>%
+  group_by(emotion,intensity) %>% 
+  mutate(tot = sum(n),
+         p = n/tot)
+
+dat_sum <- rbind(dat_sum_moebius,dat_sum_online)
+  
+  
+
+plot_gew_discrete <- dat_sum %>% 
   drop_na(resp_emotion_label)%>%
   mutate(intensity = stringr::str_to_title(intensity)) %>% 
   clean_emotion_names(emotion) %>% 
-  ggplot(aes(x = resp_emotion_label, y = n, fill = intensity)) +
+  ggplot(aes(x = resp_emotion_label, y = p, fill = Exp.group)) +
   geom_col(position = position_dodge()) +
   facet_grid(emotion~intensity) +
   cowplot::theme_minimal_hgrid() +
   theme_paper(font_size = 10) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,
-                                   face = ifelse(levels(dat_summ$resp_emotion_label) %in% unique(dat_summ$emotion),
+                                   face = ifelse(levels(dat_sum$resp_emotion_label) %in% unique(dat_sum$emotion),
                                                  "bold", "plain"),
-                                   size = ifelse(levels(dat_summ$resp_emotion_label) %in% unique(dat_summ$emotion),
+                                   size = ifelse(levels(dat_sum$resp_emotion_label) %in% unique(dat_sum$emotion),
                                                  10, 8)),
         axis.text.y = element_text(size = 8),
         axis.title.x = element_blank(),
@@ -308,7 +333,6 @@ plot_list <- make_named_list(plot_gew_legend_neutral,
                              plot_gew_emotions,
                              plot_gew_discrete,
                              plot_angle_intensity, 
-                             plot_kappa_intensity, 
                              plot_int_intensity )
 
 saveRDS(plot_list, file = "objects/paper_plots.rds")
